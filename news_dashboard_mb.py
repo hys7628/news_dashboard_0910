@@ -61,7 +61,7 @@ def get_icon_base64(category_name):
         for key, val in CATEGORY_ICONS.items():
             if key in clean_cat:
                 file_name = val
-                break
+                break 
     
     if not file_name:
         file_name = CATEGORY_ICONS.get("기타", "기타.png")
