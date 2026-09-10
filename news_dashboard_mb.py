@@ -12,9 +12,9 @@ from PIL import Image
 st.set_page_config(page_title="News Hub", layout="wide", initial_sidebar_state="collapsed")
 
 # 2. 고정 경로 (절대 수정 금지)
-BASE_DIR = "'/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/신문 스크랩/2026'"
-AUDIO_PATH = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/신문 대시보드/news.mp3"
-ASSET_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/신문 대시보드"
+BASE_DIR = "'/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/news_scrapping/2026'"
+AUDIO_PATH = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard"
+ASSET_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/CATEGORY_EMOJI_PNG"
 
 # 이모티콘 대체 PNG 아이콘 폴더 경로
 ICON_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/신문 대시보드/CATEGORY_EMOJI_PNG"
