@@ -12,7 +12,7 @@ from PIL import Image
 st.set_page_config(page_title="News Hub", layout="wide", initial_sidebar_state="collapsed")
 
 # 2. 고정 경로 (절대 수정 금지)
-BASE_DIR = "'/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/news_scrapping/2026'"
+BASE_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/news_scrapping/2026"
 AUDIO_PATH = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard"
 ASSET_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/CATEGORY_EMOJI_PNG"
 
