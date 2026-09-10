@@ -17,7 +17,7 @@ AUDIO_PATH = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard"
 ASSET_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/CATEGORY_EMOJI_PNG"
 
 # 이모티콘 대체 PNG 아이콘 폴더 경로
-ICON_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/신문 대시보드/CATEGORY_EMOJI_PNG"
+ICON_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/CATEGORY_EMOJI_PNG"
 
 # 좌측 이모티콘 자리 PNG 이미지 매핑
 CATEGORY_ICONS = {
