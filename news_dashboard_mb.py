@@ -413,9 +413,9 @@ def get_categorized_files(base_dir):
 
 categorized_data = get_categorized_files(BASE_DIR)
 
-# -------------------------------------------------------------
+
 # STEP 1 : 물방울 인트로 화면
-# -------------------------------------------------------------
+
 if not st.session_state.is_expanded:
     play_background_audio(AUDIO_PATH, volume=0.1)
     # [대안 3] 글래스 미니 태그 빗방울 드롭 효과
@@ -478,9 +478,9 @@ if not st.session_state.is_expanded:
             st.session_state.is_expanded = True
             st.rerun()
 
-# -------------------------------------------------------------
+
 # STEP 2 & 3 : 산업군 직사각형 카드 그리드 화면
-# -------------------------------------------------------------
+
 else:
     top_col1, top_col2 = st.columns([7.5, 2.5])
     with top_col1:
@@ -535,9 +535,9 @@ else:
                     st.session_state.selected_file = None
                     st.rerun()
 
-        # -------------------------------------------------------------
+       
         # STEP 5 : 기사 목록 & 본문 내용 출력
-        # -------------------------------------------------------------
+        
         if st.session_state.selected_category:
             current_cat = st.session_state.selected_category
             files = categorized_data[current_cat]
