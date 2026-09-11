@@ -11,25 +11,43 @@ from PIL import Image
 # 1. 기본 페이지 레이아웃 설정
 st.set_page_config(page_title="News Hub", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. 기준 루트 폴더 및 os.path.join 기반 경로 설정
-ROOT_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard"
+# 2. 경로 직접 표기 배제: os.path.join 및 시스템 홈 디렉터리 동적 조립
+# 사용자 홈 디렉터리(/Users/현재사용자 또는 C:\Users\현재사용자)
+USER_HOME = os.path.expanduser("~")
 
-# 음원 파일 경로 (# /Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard)
+# 데스크탑 경로를 os.path.join으로만 조립
+DESKTOP_DIR = os.path.join(USER_HOME, "Desktop")
+
+# 현재 실행 파일의 위치를 기준으로 ROOT_DIR 확인 후 조립
+CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# news_dashboard 루트 폴더를 os.path.join으로 안전하게 탐색 및 조립
+ROOT_DIR = os.path.join(DESKTOP_DIR, "AI_Coding_Pyhton", "news_dashboard")
+if not os.path.exists(ROOT_DIR):
+    ROOT_DIR = CURRENT_FILE_DIR
+
+# 음원 경로: ROOT_DIR 바로 아래의 news.mp3
 AUDIO_PATH = os.path.join(ROOT_DIR, "news.mp3")
 
-# 우측 일러스트 에셋 폴더 (# /Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard)
-ASSET_DIR = ROOT_DIR
+# 우측 일러스트 에셋 폴더: ROOT_DIR
+ASSET_DIR = os.path.join(ROOT_DIR)
 
-# 좌측 이모티콘 PNG 폴더 (# /Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/CATEGORY_EMOJI_PNG)
+# 좌측 이모티콘 PNG 폴더: os.path.join으로 결합
 ICON_DIR = os.path.join(ROOT_DIR, "CATEGORY_EMOJI_PNG")
 
-# 워드 기사 파일 기본 경로 (# /Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/news_scrapping/2026)
+# 워드 기사 파일 기본 경로: os.path.join으로 계층별 결합
 BASE_DIR = os.path.join(ROOT_DIR, "news_scrapping", "2026")
 
-# 영문/한글 폴더명 차이 대비 (폴더명이 '신문 스크랩'으로 되어있을 경우 자동 전환)
+# news_scrapping 또는 신문 스크랩(공백 포함) 폴더 자동 매칭
 if not os.path.exists(BASE_DIR):
-    for candidate in ["news_scrapping", "news_scrapping ", "신문 스크랩", "신문 스크랩 "]:
-        temp_path = os.path.join(ROOT_DIR, candidate, "2026")
+    candidate_folders = [
+        ("news_scrapping", "2026"),
+        ("news_scrapping ", "2026"),
+        ("신문 스크랩", "2026"),
+        ("신문 스크랩 ", "2026")
+    ]
+    for folder_name, sub_name in candidate_folders:
+        temp_path = os.path.join(ROOT_DIR, folder_name, sub_name)
         if os.path.exists(temp_path):
             BASE_DIR = temp_path
             break
