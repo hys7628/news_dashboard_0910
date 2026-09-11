@@ -420,6 +420,58 @@ categorized_data = get_categorized_files(BASE_DIR)
 # -------------------------------------------------------------
 if not st.session_state.is_expanded:
     play_background_audio(AUDIO_PATH, volume=0.1)
+    # [대안 3] 글래스 미니 태그 빗방울 드롭 효과
+    drops_html = """
+    <div class="drop-container">
+        <div class="glass-drop drop-1">🔬Tech🔬</div>
+        <div class="glass-drop drop-2">⚡Energy⚡</div>
+        <div class="glass-drop drop-3">💳Market💳</div>
+        <div class="glass-drop drop-4">📈Economy📈</div>
+        <div class="glass-drop drop-5">🛢️Oil🛢️</div>
+        <div class="glass-drop drop-6">⚽️Sport⚽️</div>
+        <div class="glass-drop drop-7">🎨Art🎶</div>
+        <div class="glass-drop drop-8">🙋🏻‍♂️Society🙋🏻‍♀️</div>
+    </div>
+    <style>
+        .drop-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .glass-drop {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255, 255, 255, 0.85);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            box-shadow: 0 10px 25px rgba(50, 80, 150, 0.1);
+        }
+        @keyframes gentleFall {
+            0% { transform: translateY(-80px) rotate(0deg); opacity: 0; }
+            15% { opacity: 0.85; }
+            85% { opacity: 0.85; }
+            100% { transform: translateY(105vh) rotate(6deg); opacity: 0; }
+        }
+        .drop-1 { left: 12%; animation: gentleFall 9s linear infinite; }
+        .drop-2 { left: 32%; animation: gentleFall 12s linear infinite 2s; }
+        .drop-3 { left: 58%; animation: gentleFall 10s linear infinite 5s; }
+        .drop-4 { left: 78%; animation: gentleFall 13s linear infinite 1s; }
+        .drop-5 { left: 88%; animation: gentleFall 11s linear infinite 4s; }
+        .drop-6 { left: 20%; animation: gentleFall 8s linear infinite 4s; }
+        .drop-7 { left: 40%; animation: gentleFall 10s linear infinite 5s; }
+        .drop-8 { left: 67%; animation: gentleFall 12s linear infinite 6s; }
+    </style>
+    """
+    st.markdown(drops_html, unsafe_allow_html=True)
 
     st.write("<div style='height: clamp(15vh, 22vh, 25vh);'></div>", unsafe_allow_html=True)
     col_l, col_center, col_r = st.columns([1, 1.4, 1])
