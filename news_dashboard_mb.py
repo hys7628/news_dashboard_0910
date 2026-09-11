@@ -59,7 +59,8 @@ CATEGORY_META = {
     "바이오": {"icon": "바이오.png", "image": ""},
     "부동산": {"icon": "부동산.png", "image": ""},
     "글로벌": {"icon": "글로벌.png", "image": ""},
-    "산업": {"icon": "산업.png", "image": ""}
+    "산업": {"icon": "산업.png", "image": ""},
+    "비즈니스": {"icon": "비즈니스.png", "image": ""}
 }
 
 def resolve_category_meta(category_name):
