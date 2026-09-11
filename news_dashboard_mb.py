@@ -50,6 +50,9 @@ CATEGORY_META = {
     # 에너지
     "에너지": {"icon": "에너지.png", "image": "Energy.png"},
     "energy": {"icon": "에너지.png", "image": "Energy.png"},
+    # 비즈니스
+    "비즈니스": {"icon": "비즈니스.png", "image": ""},
+    "business": {"icon": "비즈니스.png", "image": "Business.png"},
     # 기타 및 추가 산업군
     "기타": {"icon": "기타.png", "image": ""},
     "other": {"icon": "기타.png", "image": ""},
@@ -60,7 +63,7 @@ CATEGORY_META = {
     "부동산": {"icon": "부동산.png", "image": ""},
     "글로벌": {"icon": "글로벌.png", "image": ""},
     "산업": {"icon": "산업.png", "image": ""},
-    "비즈니스": {"icon": "비즈니스.png", "image": ""}
+    
 }
 
 def resolve_category_meta(category_name):
