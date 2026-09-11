@@ -51,7 +51,7 @@ CATEGORY_META = {
     "에너지": {"icon": "에너지.png", "image": "Energy.png"},
     "energy": {"icon": "에너지.png", "image": "Energy.png"},
     # 비즈니스
-    "비즈니스": {"icon": "비즈니스.png", "image": "Business.png"},
+    "비즈니스": {"icon": "비즈니스.png", "image": ""},
     "business": {"icon": "비즈니스.png", "image": "Business.png"},
     # 기타 및 추가 산업군
     "기타": {"icon": "기타.png", "image": ""},
@@ -63,6 +63,7 @@ CATEGORY_META = {
     "부동산": {"icon": "부동산.png", "image": ""},
     "글로벌": {"icon": "글로벌.png", "image": ""},
     "산업": {"icon": "산업.png", "image": ""},
+    
 }
 
 def resolve_category_meta(category_name):
@@ -74,64 +75,50 @@ def resolve_category_meta(category_name):
             return val
     return CATEGORY_META["기타"]
 
-# -------------------------------------------------------------
-# 성능 최적화: 이미지 및 오디오 Base64 캐싱 (디스크 반복 탐색 제거)
-# -------------------------------------------------------------
-@st.cache_data(show_spinner=False)
-def get_image_base64_cached(file_name, asset_dir):
+# 이미지 파일 Base64 변환 함수 (우측 일러스트)
+def get_image_base64(file_name):
     if not file_name:
         return ""
-    img_path = os.path.join(asset_dir, file_name)
+    img_path = os.path.join(ASSET_DIR, file_name)
     if os.path.exists(img_path):
         try:
             with open(img_path, "rb") as f:
                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
         except Exception:
             return ""
-    if os.path.exists(asset_dir):
+    # 대소문자 차이 보정 탐색
+    if os.path.exists(ASSET_DIR):
         target_lower = file_name.lower()
-        for f in os.listdir(asset_dir):
+        for f in os.listdir(ASSET_DIR):
             if f.lower() == target_lower:
                 try:
-                    with open(os.path.join(asset_dir, f), "rb") as fp:
+                    with open(os.path.join(ASSET_DIR, f), "rb") as fp:
                         return f"data:image/png;base64,{base64.b64encode(fp.read()).decode()}"
                 except Exception:
                     pass
     return ""
 
-def get_image_base64(file_name):
-    return get_image_base64_cached(file_name, ASSET_DIR)
-
-@st.cache_data(show_spinner=False)
-def get_icon_base64_cached(file_name, icon_dir):
-    if not file_name or not os.path.exists(icon_dir):
+# 좌측 이모티콘 아이콘 Base64 변환 함수 (NFC 한글 정규화 적용)
+def get_icon_base64(file_name):
+    if not file_name or not os.path.exists(ICON_DIR):
         return ""
     file_name_nfc = unicodedata.normalize('NFC', file_name)
-    for actual_file in os.listdir(icon_dir):
+    for actual_file in os.listdir(ICON_DIR):
         if unicodedata.normalize('NFC', actual_file) == file_name_nfc:
             try:
-                with open(os.path.join(icon_dir, actual_file), "rb") as f:
+                with open(os.path.join(ICON_DIR, actual_file), "rb") as f:
                     return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
             except Exception:
                 pass
     return ""
 
-def get_icon_base64(file_name):
-    return get_icon_base64_cached(file_name, ICON_DIR)
-
-@st.cache_data(show_spinner=False)
-def get_audio_base64_cached(audio_path):
-    if audio_path and os.path.exists(audio_path):
-        try:
-            with open(audio_path, "rb") as f:
-                return base64.b64encode(f.read()).decode()
-        except Exception:
-            return ""
-    return ""
-
+# 배경음악 제어 함수
 def play_background_audio(audio_file_path, volume=0.1):
-    encoded_audio = get_audio_base64_cached(audio_file_path)
-    if encoded_audio:
+    if os.path.exists(audio_file_path):
+        with open(audio_file_path, "rb") as f:
+            audio_bytes = f.read()
+        encoded_audio = base64.b64encode(audio_bytes).decode()
+        
         audio_html = f"""
             <audio id="bg-audio" autoplay loop style="display:none;">
                 <source src="data:audio/mp3;base64,{encoded_audio}" type="audio/mp3">
@@ -151,7 +138,7 @@ def play_background_audio(audio_file_path, volume=0.1):
         """
         st.markdown(audio_html, unsafe_allow_html=True)
 
-# 3. 반응형 디자인 스타일링 (GPU 하드웨어 가속 및 렌더링 최적화)
+# 3. 반응형 디자인 스타일링
 st.markdown("""
 <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -164,21 +151,23 @@ st.markdown("""
     .stApp {
         background-color: #dbe4f0 !important;
         background-image: 
-            radial-gradient(at 10% 15%, rgba(197, 215, 255, 0.8) 0px, transparent 55%),
-            radial-gradient(at 90% 10%, rgba(224, 205, 255, 0.7) 0px, transparent 50%),
-            radial-gradient(at 5% 85%, rgba(209, 245, 235, 0.8) 0px, transparent 55%),
-            radial-gradient(at 95% 85%, rgba(255, 226, 209, 0.75) 0px, transparent 50%) !important;
+            radial-gradient(at 10% 15%, rgba(197, 215, 255, 0.85) 0px, transparent 55%),
+            radial-gradient(at 90% 10%, rgba(224, 205, 255, 0.75) 0px, transparent 50%),
+            radial-gradient(at 5% 85%, rgba(209, 245, 235, 0.85) 0px, transparent 55%),
+            radial-gradient(at 95% 85%, rgba(255, 226, 209, 0.8) 0px, transparent 50%),
+            radial-gradient(at 50% 50%, rgba(238, 242, 250, 0.6) 0px, transparent 65%) !important;
         background-attachment: fixed !important;
         background-size: cover !important;
     }
 
     .main .block-container {
-        background: rgba(255, 255, 255, 0.8) !important;
-        backdrop-filter: blur(18px) !important;
-        -webkit-backdrop-filter: blur(18px) !important;
+        background: rgba(255, 255, 255, 0.75) !important;
+        backdrop-filter: blur(35px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
         border-radius: clamp(20px, 4vw, 36px) !important;
         border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
-        box-shadow: 0 20px 50px rgba(80, 100, 140, 0.1) !important;
+        box-shadow: 0 25px 60px rgba(80, 100, 140, 0.12),
+                    inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
         padding: clamp(20px, 4vw, 44px) !important;
         margin-top: clamp(10px, 2.5vw, 25px) !important;
         margin-bottom: clamp(15px, 3vw, 35px) !important;
@@ -187,9 +176,9 @@ st.markdown("""
     }
 
     @keyframes floating {
-        0% { transform: translateY(0px); box-shadow: 0 12px 25px rgba(50, 80, 150, 0.15); }
-        50% { transform: translateY(-12px); box-shadow: 0 20px 35px rgba(50, 80, 150, 0.22); }
-        100% { transform: translateY(0px); box-shadow: 0 12px 25px rgba(50, 80, 150, 0.15); }
+        0% { transform: translateY(0px) scale(1); box-shadow: 0 15px 35px rgba(50, 80, 150, 0.18); }
+        50% { transform: translateY(-14px) scale(1.02); box-shadow: 0 25px 45px rgba(50, 80, 150, 0.28); }
+        100% { transform: translateY(0px) scale(1); box-shadow: 0 15px 35px rgba(50, 80, 150, 0.18); }
     }
 
     div[data-testid="stButton"] > button[kind="primary"] {
@@ -200,14 +189,13 @@ st.markdown("""
         border: 3px solid rgba(255, 255, 255, 0.95) !important;
         color: #1e3a8a !important;
         letter-spacing: 1.5px !important;
-        animation: floating 3s ease-in-out infinite !important;
+        animation: floating 3.2s ease-in-out infinite !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         margin: 0 auto !important;
         cursor: pointer !important;
         transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-        will-change: transform;
     }
     
     div[data-testid="stButton"] > button[kind="primary"] * {
@@ -217,33 +205,36 @@ st.markdown("""
     }
 
     div[data-testid="stButton"] > button[kind="primary"]:hover {
-        transform: scale(1.05) !important;
-        box-shadow: 0 20px 40px rgba(37, 99, 235, 0.3) !important;
+        transform: scale(1.06) !important;
+        box-shadow: 0 25px 50px rgba(37, 99, 235, 0.35) !important;
         border-color: #60a5fa !important;
+        color: #1d4ed8 !important;
     }
 
     @keyframes morphSplit {
-        0% { opacity: 0; transform: scale(0.6) translateY(-20px); border-radius: 40px; }
-        100% { opacity: 1; transform: scale(1) translateY(0px); border-radius: 24px; }
+        0% { opacity: 0; transform: scale(0.2) translateY(-40px); border-radius: 50%; }
+        60% { opacity: 0.9; border-radius: 35px; }
+        100% { opacity: 1; transform: scale(1) translateY(0px); border-radius: 26px; }
     }
 
     .industry-card {
-        background: rgba(255, 255, 255, 0.95) !important;
+        background: rgba(255, 255, 255, 0.92) !important;
         border-radius: 24px !important;
         padding: clamp(16px, 2.2vw, 24px) !important;
-        box-shadow: 0 8px 22px rgba(100, 125, 160, 0.06) !important;
+        box-shadow: 0 12px 30px rgba(100, 125, 160, 0.07),
+                    inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
         border: 1px solid rgba(255, 255, 255, 0.95) !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         margin-bottom: 12px !important;
         min-height: clamp(140px, 18vw, 160px) !important;
-        animation: morphSplit 0.35s cubic-bezier(0.25, 1, 0.5, 1) backwards !important;
-        will-change: transform, opacity;
+        animation: morphSplit 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards !important;
     }
 
     .industry-card:hover {
-        transform: translateY(-4px) scale(1.01) !important;
+        transform: translateY(-5px) scale(1.015) !important;
         background: #ffffff !important;
-        box-shadow: 0 14px 28px rgba(70, 95, 140, 0.12) !important;
+        box-shadow: 0 20px 40px rgba(70, 95, 140, 0.13) !important;
+        border-color: #ffffff !important;
     }
 
     .card-content-wrapper {
@@ -279,15 +270,15 @@ st.markdown("""
         height: clamp(65px, 8vw, 85px) !important;
         object-fit: contain !important;
         display: block !important;
-        filter: drop-shadow(0 6px 10px rgba(50, 70, 110, 0.1)) !important;
+        filter: drop-shadow(0 8px 14px rgba(50, 70, 110, 0.12)) !important;
     }
 
-    .industry-card.delay-0 { animation-delay: 0.02s; }
-    .industry-card.delay-1 { animation-delay: 0.05s; }
-    .industry-card.delay-2 { animation-delay: 0.08s; }
-    .industry-card.delay-3 { animation-delay: 0.11s; }
-    .industry-card.delay-4 { animation-delay: 0.14s; }
-    .industry-card.delay-5 { animation-delay: 0.17s; }
+    .industry-card.delay-0 { animation-delay: 0.05s; }
+    .industry-card.delay-1 { animation-delay: 0.12s; }
+    .industry-card.delay-2 { animation-delay: 0.19s; }
+    .industry-card.delay-3 { animation-delay: 0.26s; }
+    .industry-card.delay-4 { animation-delay: 0.33s; }
+    .industry-card.delay-5 { animation-delay: 0.40s; }
 
     .card-title {
         font-size: clamp(1.1rem, 1.6vw, 1.3rem) !important;
@@ -326,6 +317,7 @@ st.markdown("""
         background: #0f172a !important;
         color: #ffffff !important;
         border-color: #0f172a !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18) !important;
     }
 
     @media (max-width: 768px) {
@@ -357,7 +349,7 @@ if "selected_category" not in st.session_state:
 if "selected_file" not in st.session_state:
     st.session_state.selected_file = None
 
-# 5. 워드 파일 파싱 함수 (캐싱 적용으로 기사 클릭 시에도 딜레이 제거)
+# 5. 워드 파일 파싱 함수 (회전 각도 보정)
 NAMESPACES = {
     'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
     'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
@@ -365,7 +357,6 @@ NAMESPACES = {
     'pic': 'http://schemas.openxmlformats.org/drawingml/2006/picture'
 }
 
-@st.cache_data(show_spinner=False)
 def load_docx_content(file_path):
     doc = Document(file_path)
     paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
@@ -400,11 +391,8 @@ def load_docx_content(file_path):
             
     return paragraphs, images
 
-# -------------------------------------------------------------
-# 성능 최적화: 파일 재귀 탐색 1회 캐싱 (버튼 누를 때 디스크 스캔 스킵)
-# -------------------------------------------------------------
-@st.cache_data(show_spinner=False)
-def get_categorized_files_cached(base_dir):
+# 6. 연도/월별 하위 폴더 재귀 탐색
+def get_categorized_files(base_dir):
     data = {}
     if not base_dir or not os.path.exists(base_dir):
         return data
@@ -425,14 +413,13 @@ def get_categorized_files_cached(base_dir):
                 data[category].append(full_path)
     return data
 
-categorized_data = get_categorized_files_cached(BASE_DIR)
+categorized_data = get_categorized_files(BASE_DIR)
 
 # -------------------------------------------------------------
 # STEP 1 : 물방울 인트로 화면
 # -------------------------------------------------------------
 if not st.session_state.is_expanded:
     play_background_audio(AUDIO_PATH, volume=0.1)
-
     # [대안 3] 글래스 미니 태그 빗방울 드롭 효과
     drops_html = """
     <div class="drop-container">
@@ -519,14 +506,14 @@ else:
                 norm_cat = unicodedata.normalize('NFC', category)
                 file_count = len(categorized_data[category])
                 
-                # 한글/영문 대응 메타데이터 조회
+                # 한글/영문 모두 대응하는 메타데이터 조회
                 meta = resolve_category_meta(norm_cat)
 
-                # 1. 좌측 이모티콘 PNG (캐싱된 메모리에서 즉시 인출)
+                # 1. 좌측 이모티콘 PNG
                 icon_data_uri = get_icon_base64(meta["icon"])
                 icon_html = f'<img src="{icon_data_uri}" class="card-left-icon-img" alt="{norm_cat}">' if icon_data_uri else '<div class="card-left-icon-img"></div>'
 
-                # 2. 우측 일러스트 PNG (캐싱된 메모리에서 즉시 인출)
+                # 2. 우측 일러스트 PNG
                 right_img_uri = get_image_base64(meta["image"])
                 right_img_html = f'<img src="{right_img_uri}" class="card-right-img" alt="{norm_cat}">' if right_img_uri else '<div class="card-right-img"></div>'
 
