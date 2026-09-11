@@ -11,50 +11,67 @@ from PIL import Image
 # 1. 기본 페이지 레이아웃 설정
 st.set_page_config(page_title="News Hub", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. os.path.join 기반 동적 경로 설정 (스크린샷 폴더 구조 정확 반영)
+# 2. os.path.join 기반 동적 경로 설정
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# news_dashboard 루트 기준 디렉터리
 ROOT_DIR = CURRENT_DIR if os.path.basename(CURRENT_DIR) == "news_dashboard" else os.path.join(CURRENT_DIR, "news_dashboard")
 if not os.path.exists(ROOT_DIR):
     ROOT_DIR = CURRENT_DIR
 
-# 1) 음원 파일 경로 (news_dashboard/news.mp3)
+# 음원 경로
 AUDIO_PATH = os.path.join(ROOT_DIR, "news.mp3")
 
-# 2) 우측 일러스트 에셋 경로 (news_dashboard 폴더 바로 아래)
+# 우측 일러스트 경로 (news_dashboard 루트 폴더)
 ASSET_DIR = ROOT_DIR
 
-# 3) 좌측 이모티콘 PNG 경로 (news_dashboard/CATEGORY_EMOJI_PNG)
+# 좌측 이모티콘 아이콘 경로 (news_dashboard/CATEGORY_EMOJI_PNG)
 ICON_DIR = os.path.join(ROOT_DIR, "CATEGORY_EMOJI_PNG")
 
-# 4) 워드 파일 기본 경로 (news_dashboard/news_scrapping)
+# 워드 파일 경로 (news_scrapping 또는 신문 스크랩 자동 매칭)
 BASE_DIR = os.path.join(ROOT_DIR, "news_scrapping")
 if not os.path.exists(BASE_DIR):
     candidate_kr = os.path.join(ROOT_DIR, "신문 스크랩")
     if os.path.exists(candidate_kr):
         BASE_DIR = candidate_kr
 
-# 좌측 이모티콘 매핑
-CATEGORY_ICONS = {
-    "경제": "경제.png",
-    "에너지": "에너지.png",
-    "반도체": "반도체.png",
-    "기타": "기타.png",
-    "석유": "석유.png",
-    "금융": "금융.png"
+# 한글 및 영문 카테고리 통합 매핑 (좌측 아이콘 / 우측 일러스트)
+CATEGORY_META = {
+    # 반도체
+    "반도체": {"icon": "반도체.png", "image": "Semiconductor.png"},
+    "semiconductor": {"icon": "반도체.png", "image": "Semiconductor.png"},
+    # 경제
+    "경제": {"icon": "경제.png", "image": "Economy.png"},
+    "economy": {"icon": "경제.png", "image": "Economy.png"},
+    # 금융
+    "금융": {"icon": "금융.png", "image": "Finance.png"},
+    "finance": {"icon": "금융.png", "image": "Finance.png"},
+    # 석유
+    "석유": {"icon": "석유.png", "image": "Oil.png"},
+    "oil": {"icon": "석유.png", "image": "Oil.png"},
+    # 에너지
+    "에너지": {"icon": "에너지.png", "image": "Energy.png"},
+    "energy": {"icon": "에너지.png", "image": "Energy.png"},
+    # 기타 및 추가 산업군
+    "기타": {"icon": "기타.png", "image": ""},
+    "other": {"icon": "기타.png", "image": ""},
+    "it": {"icon": "IT.png", "image": ""},
+    "테크": {"icon": "테크.png", "image": ""},
+    "모빌리티": {"icon": "모빌리티.png", "image": ""},
+    "바이오": {"icon": "바이오.png", "image": ""},
+    "부동산": {"icon": "부동산.png", "image": ""},
+    "글로벌": {"icon": "글로벌.png", "image": ""},
+    "산업": {"icon": "산업.png", "image": ""}
 }
 
-# 우측 일러스트 매핑
-CATEGORY_IMAGES = {
-    "금융": "Finance.png",
-    "반도체": "Semiconductor.png",
-    "에너지": "Energy.png",
-    "경제": "Economy.png",
-    "석유": "Oil.png"
-}
+def resolve_category_meta(category_name):
+    clean_cat = unicodedata.normalize('NFC', str(category_name).strip().lower())
+    if clean_cat in CATEGORY_META:
+        return CATEGORY_META[clean_cat]
+    for key, val in CATEGORY_META.items():
+        if key in clean_cat:
+            return val
+    return CATEGORY_META["기타"]
 
-# 이미지 파일(우측 일러스트) Base64 변환 함수
+# 이미지 파일 Base64 변환 함수 (우측 일러스트)
 def get_image_base64(file_name):
     if not file_name:
         return ""
@@ -65,30 +82,30 @@ def get_image_base64(file_name):
                 return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
         except Exception:
             return ""
-    return ""
-
-# 좌측 이모티콘 PNG 이미지 Base64 변환 함수 (NFC 한글 정규화 적용)
-def get_icon_base64(category_name):
-    clean_cat = unicodedata.normalize('NFC', str(category_name).strip())
-    file_name = CATEGORY_ICONS.get(clean_cat)
-    if not file_name:
-        for key, val in CATEGORY_ICONS.items():
-            if key in clean_cat:
-                file_name = val
-                break 
-    
-    if not file_name:
-        file_name = CATEGORY_ICONS.get("기타", "기타.png")
-
-    if os.path.exists(ICON_DIR):
-        file_name_nfc = unicodedata.normalize('NFC', file_name)
-        for actual_file in os.listdir(ICON_DIR):
-            if unicodedata.normalize('NFC', actual_file) == file_name_nfc:
+    # 대소문자 차이 보정 탐색
+    if os.path.exists(ASSET_DIR):
+        target_lower = file_name.lower()
+        for f in os.listdir(ASSET_DIR):
+            if f.lower() == target_lower:
                 try:
-                    with open(os.path.join(ICON_DIR, actual_file), "rb") as f:
-                        return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+                    with open(os.path.join(ASSET_DIR, f), "rb") as fp:
+                        return f"data:image/png;base64,{base64.b64encode(fp.read()).decode()}"
                 except Exception:
                     pass
+    return ""
+
+# 좌측 이모티콘 아이콘 Base64 변환 함수 (NFC 한글 정규화 적용)
+def get_icon_base64(file_name):
+    if not file_name or not os.path.exists(ICON_DIR):
+        return ""
+    file_name_nfc = unicodedata.normalize('NFC', file_name)
+    for actual_file in os.listdir(ICON_DIR):
+        if unicodedata.normalize('NFC', actual_file) == file_name_nfc:
+            try:
+                with open(os.path.join(ICON_DIR, actual_file), "rb") as f:
+                    return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+            except Exception:
+                pass
     return ""
 
 # 배경음악 제어 함수
@@ -370,13 +387,12 @@ def load_docx_content(file_path):
             
     return paragraphs, images
 
-# 6. 연도/월별 하위 폴더까지 무제한 자동 수집 함수 (NFC 정규화 적용)
+# 6. 연도/월별 하위 폴더 재귀 탐색
 def get_categorized_files(base_dir):
     data = {}
     if not base_dir or not os.path.exists(base_dir):
         return data
 
-    # os.walk로 2026/8월/0826/... 등 깊이와 상관없이 모든 하위 docx 탐색
     for root, _, filenames in os.walk(base_dir):
         for filename in filenames:
             if filename.endswith(".docx") and not filename.startswith("~$"):
@@ -434,13 +450,15 @@ else:
                 norm_cat = unicodedata.normalize('NFC', category)
                 file_count = len(categorized_data[category])
                 
-                # 좌측 아이콘 이미지
-                icon_data_uri = get_icon_base64(norm_cat)
+                # 한글/영문 모두 대응하는 메타데이터 조회
+                meta = resolve_category_meta(norm_cat)
+
+                # 1. 좌측 이모티콘 PNG
+                icon_data_uri = get_icon_base64(meta["icon"])
                 icon_html = f'<img src="{icon_data_uri}" class="card-left-icon-img" alt="{norm_cat}">' if icon_data_uri else '<div class="card-left-icon-img"></div>'
 
-                # 우측 일러스트 이미지
-                right_img_file = CATEGORY_IMAGES.get(norm_cat, "")
-                right_img_uri = get_image_base64(right_img_file)
+                # 2. 우측 일러스트 PNG
+                right_img_uri = get_image_base64(meta["image"])
                 right_img_html = f'<img src="{right_img_uri}" class="card-right-img" alt="{norm_cat}">' if right_img_uri else '<div class="card-right-img"></div>'
 
                 st.markdown(f"""
@@ -473,7 +491,6 @@ else:
             st.markdown("---")
             st.markdown(f"### 📰 **[{current_cat}]** 관련 기사 목록")
 
-            # 연도/월/일자가 섞여 있어도 파일명으로 깔끔하게 매핑
             file_options = {os.path.basename(f): f for f in files}
             selected_filename = st.selectbox(
                 "확인할 기사를 선택하세요:",
