@@ -11,15 +11,29 @@ from PIL import Image
 # 1. 기본 페이지 레이아웃 설정
 st.set_page_config(page_title="News Hub", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. 고정 경로 (절대 수정 금지)
-BASE_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/news_scrapping/2026"
-AUDIO_PATH = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard"
-ASSET_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/CATEGORY_EMOJI_PNG"
+# 2. 기준 루트 폴더 및 os.path.join 기반 경로 설정
+ROOT_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard"
 
-# 이모티콘 대체 PNG 아이콘 폴더 경로
-ICON_DIR = "/Users/han-yunsu/Desktop/AI_Coding_Pyhton/news_dashboard/CATEGORY_EMOJI_PNG"
+# 음원 경로
+AUDIO_PATH = os.path.join(ROOT_DIR, "news.mp3")
 
-# 좌측 이모티콘 자리 PNG 이미지 매핑
+# 우측 일러스트 에셋 폴더
+ASSET_DIR = ROOT_DIR
+
+# 좌측 이모티콘 PNG 폴더
+ICON_DIR = os.path.join(ROOT_DIR, "CATEGORY_EMOJI_PNG")
+
+# 워드 기사 파일 기본 경로 (news_scrapping 또는 신문 스크랩 자동 매칭)
+BASE_DIR = os.path.join(ROOT_DIR, "news_scrapping", "2026")
+if not os.path.exists(BASE_DIR):
+    candidate_kr = os.path.join(ROOT_DIR, "신문 스크랩", "2026")
+    candidate_kr_space = os.path.join(ROOT_DIR, "신문 스크랩 ", "2026")
+    if os.path.exists(candidate_kr):
+        BASE_DIR = candidate_kr
+    elif os.path.exists(candidate_kr_space):
+        BASE_DIR = candidate_kr_space
+
+# 좌측 이모티콘 PNG 이미지 매핑
 CATEGORY_ICONS = {
     "경제": "경제.png",
     "에너지": "에너지.png",
@@ -46,16 +60,14 @@ def get_image_base64(file_name):
     if os.path.exists(img_path):
         try:
             with open(img_path, "rb") as f:
-                data = f.read()
-            return f"data:image/png;base64,{base64.b64encode(data).decode()}"
+                return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
         except Exception:
             return ""
     return ""
 
-# 좌측 이모티콘 자리 PNG 이미지 Base64 변환 함수 (NFC 한글 정규화 적용)
+# 좌측 이모티콘 PNG 이미지 Base64 변환 함수 (NFC 한글 정규화 적용)
 def get_icon_base64(category_name):
     clean_cat = unicodedata.normalize('NFC', str(category_name).strip())
-    
     file_name = CATEGORY_ICONS.get(clean_cat)
     if not file_name:
         for key, val in CATEGORY_ICONS.items():
@@ -103,7 +115,7 @@ def play_background_audio(audio_file_path, volume=0.1):
         """
         st.markdown(audio_html, unsafe_allow_html=True)
 
-# 3. 반응형 디자인 스타일링 (미디어 쿼리 및 유동적 뷰포트 스케일링)
+# 3. 반응형 디자인 스타일링
 st.markdown("""
 <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -113,7 +125,6 @@ st.markdown("""
         box-sizing: border-box !important;
     }
 
-    /* 1. 오로라 메쉬 배경 */
     .stApp {
         background-color: #dbe4f0 !important;
         background-image: 
@@ -126,7 +137,6 @@ st.markdown("""
         background-size: cover !important;
     }
 
-    /* 2. 중앙 메인 컨테이너 (반응형 패딩 & 너비) */
     .main .block-container {
         background: rgba(255, 255, 255, 0.75) !important;
         backdrop-filter: blur(35px) saturate(180%) !important;
@@ -142,7 +152,6 @@ st.markdown("""
         width: 95% !important;
     }
 
-    /* 3. 반응형 물방울 인트로 버튼 */
     @keyframes floating {
         0% { transform: translateY(0px) scale(1); box-shadow: 0 15px 35px rgba(50, 80, 150, 0.18); }
         50% { transform: translateY(-14px) scale(1.02); box-shadow: 0 25px 45px rgba(50, 80, 150, 0.28); }
@@ -180,23 +189,11 @@ st.markdown("""
     }
 
     @keyframes morphSplit {
-        0% {
-            opacity: 0;
-            transform: scale(0.2) translateY(-40px);
-            border-radius: 50%;
-        }
-        60% {
-            opacity: 0.9;
-            border-radius: 35px;
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1) translateY(0px);
-            border-radius: 26px;
-        }
+        0% { opacity: 0; transform: scale(0.2) translateY(-40px); border-radius: 50%; }
+        60% { opacity: 0.9; border-radius: 35px; }
+        100% { opacity: 1; transform: scale(1) translateY(0px); border-radius: 26px; }
     }
 
-    /* 4. 직사각형 산업군 카드 (반응형 플렉스 & 유동적 크기) */
     .industry-card {
         background: rgba(255, 255, 255, 0.92) !important;
         border-radius: 24px !important;
@@ -282,7 +279,6 @@ st.markdown("""
         white-space: nowrap !important;
     }
 
-    /* 5. 버튼 캡슐 스타일 */
     div[data-testid="stButton"] > button:not([kind="primary"]) {
         border-radius: 20px !important;
         border: 1px solid rgba(203, 213, 225, 0.8) !important;
@@ -301,7 +297,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18) !important;
     }
 
-    /* 6. 모바일 화면 최적화 (768px 이하) */
     @media (max-width: 768px) {
         .main .block-container {
             width: 98% !important;
@@ -331,7 +326,7 @@ if "selected_category" not in st.session_state:
 if "selected_file" not in st.session_state:
     st.session_state.selected_file = None
 
-# 5. 워드 파일 파싱 함수 (회전 각도 보정)
+# 5. 워드 파일 파싱 함수
 NAMESPACES = {
     'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
     'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
@@ -373,10 +368,10 @@ def load_docx_content(file_path):
             
     return paragraphs, images
 
-# 6. 파일 수집 및 산업군 분류 (NFC 완성형 정규화 적용)
+# 6. 파일 수집 및 산업군 분류
 def get_categorized_files(base_dir):
     data = {}
-    if not os.path.exists(base_dir):
+    if not base_dir or not os.path.exists(base_dir):
         return data
 
     for root, _, filenames in os.walk(base_dir):
@@ -425,11 +420,10 @@ else:
             st.rerun()
 
     if not categorized_data:
-        st.warning(f"'{BASE_DIR}' 경로에 워드 파일이 없습니다.")
+        target_display = BASE_DIR if BASE_DIR else "지정된 경로"
+        st.warning(f"'{target_display}' 경로에 워드 파일이 없습니다.")
     else:
         categories = list(categorized_data.keys())
-        
-        # 3열 그리드 (모바일 화면에서는 Streamlit 기본 엔진이 세로 1열로 자동 반응형 전환)
         cols = st.columns(3)
         for idx, category in enumerate(categories):
             col = cols[idx % 3]
@@ -437,16 +431,15 @@ else:
                 norm_cat = unicodedata.normalize('NFC', category)
                 file_count = len(categorized_data[category])
                 
-                # 1. 좌측 이모티콘 위치: CATEGORY_EMOJI_PNG 폴더의 PNG 이미지 인출
+                # 좌측 아이콘 이미지
                 icon_data_uri = get_icon_base64(norm_cat)
                 icon_html = f'<img src="{icon_data_uri}" class="card-left-icon-img" alt="{norm_cat}">' if icon_data_uri else '<div class="card-left-icon-img"></div>'
 
-                # 2. 우측 일러스트 위치: 신문 대시보드 폴더의 PNG 이미지 인출
+                # 우측 일러스트 이미지
                 right_img_file = CATEGORY_IMAGES.get(norm_cat, "")
                 right_img_uri = get_image_base64(right_img_file)
                 right_img_html = f'<img src="{right_img_uri}" class="card-right-img" alt="{norm_cat}">' if right_img_uri else '<div class="card-right-img"></div>'
 
-                # 반응형 카드 렌더링
                 st.markdown(f"""
                 <div class="industry-card delay-{idx % 6}">
                     <div class="card-content-wrapper">
@@ -462,14 +455,13 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 기사 보기 버튼
                 if st.button(f"{category} 기사 보기 ➔", key=f"cat_btn_{category}", use_container_width=True):
                     st.session_state.selected_category = category
                     st.session_state.selected_file = None
                     st.rerun()
 
         # -------------------------------------------------------------
-        # STEP 5 : 기사 목록 & 본문 내용 출력 (반응형 뷰어)
+        # STEP 5 : 기사 목록 & 본문 내용 출력
         # -------------------------------------------------------------
         if st.session_state.selected_category:
             current_cat = st.session_state.selected_category
@@ -502,7 +494,6 @@ else:
                         clean_name = os.path.basename(target_path).replace(".docx", "")
                         header_text = re.sub(r'\[.*?\]', '', clean_name).strip()
 
-                    # 반응형 중앙 본문 컬럼
                     _, viewer_col, _ = st.columns([0.02, 0.96, 0.02])
                     with viewer_col:
                         st.header(header_text)
@@ -512,7 +503,7 @@ else:
                         else:
                             st.info("첨부된 이미지가 없습니다.")
                         
-                        st.markdown("---") #sadf
+                        st.markdown("---")
                         for p in body_paragraphs:
                             st.write(p)
                             
