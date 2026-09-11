@@ -26,8 +26,8 @@ ICON_DIR = os.path.join(ROOT_DIR, "CATEGORY_EMOJI_PNG")
 # 워드 기사 파일 기본 경로 (news_scrapping 또는 신문 스크랩 자동 매칭)
 BASE_DIR = os.path.join(ROOT_DIR, "news_scrapping", "2026")
 if not os.path.exists(BASE_DIR):
-    candidate_kr = os.path.join(ROOT_DIR, "신문 스크랩", "2026")
-    candidate_kr_space = os.path.join(ROOT_DIR, "신문 스크랩 ", "2026")
+    candidate_kr = os.path.join(ROOT_DIR, "news_scrapping", "2026")
+    candidate_kr_space = os.path.join(ROOT_DIR, "news_scrapping ", "2026")
     if os.path.exists(candidate_kr):
         BASE_DIR = candidate_kr
     elif os.path.exists(candidate_kr_space):
