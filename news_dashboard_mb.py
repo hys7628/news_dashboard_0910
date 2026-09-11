@@ -11,48 +11,31 @@ from PIL import Image
 # 1. 기본 페이지 레이아웃 설정
 st.set_page_config(page_title="News Hub", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. 경로 직접 표기 배제: os.path.join 및 시스템 홈 디렉터리 동적 조립
-# 사용자 홈 디렉터리(/Users/현재사용자 또는 C:\Users\현재사용자)
-USER_HOME = os.path.expanduser("~")
+# 2. os.path.join 기반 동적 경로 설정 (스크린샷 폴더 구조 정확 반영)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 데스크탑 경로를 os.path.join으로만 조립
-DESKTOP_DIR = os.path.join(USER_HOME, "Desktop")
-
-# 현재 실행 파일의 위치를 기준으로 ROOT_DIR 확인 후 조립
-CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# news_dashboard 루트 폴더를 os.path.join으로 안전하게 탐색 및 조립
-ROOT_DIR = os.path.join(DESKTOP_DIR, "AI_Coding_Pyhton", "news_dashboard")
+# news_dashboard 루트 기준 디렉터리
+ROOT_DIR = CURRENT_DIR if os.path.basename(CURRENT_DIR) == "news_dashboard" else os.path.join(CURRENT_DIR, "news_dashboard")
 if not os.path.exists(ROOT_DIR):
-    ROOT_DIR = CURRENT_FILE_DIR
+    ROOT_DIR = CURRENT_DIR
 
-# 음원 경로: ROOT_DIR 바로 아래의 news.mp3
+# 1) 음원 파일 경로 (news_dashboard/news.mp3)
 AUDIO_PATH = os.path.join(ROOT_DIR, "news.mp3")
 
-# 우측 일러스트 에셋 폴더: ROOT_DIR
-ASSET_DIR = os.path.join(ROOT_DIR)
+# 2) 우측 일러스트 에셋 경로 (news_dashboard 폴더 바로 아래)
+ASSET_DIR = ROOT_DIR
 
-# 좌측 이모티콘 PNG 폴더: os.path.join으로 결합
+# 3) 좌측 이모티콘 PNG 경로 (news_dashboard/CATEGORY_EMOJI_PNG)
 ICON_DIR = os.path.join(ROOT_DIR, "CATEGORY_EMOJI_PNG")
 
-# 워드 기사 파일 기본 경로: os.path.join으로 계층별 결합
-BASE_DIR = os.path.join(ROOT_DIR, "news_scrapping", "2026")
-
-# news_scrapping 또는 신문 스크랩(공백 포함) 폴더 자동 매칭
+# 4) 워드 파일 기본 경로 (news_dashboard/news_scrapping)
+BASE_DIR = os.path.join(ROOT_DIR, "news_scrapping")
 if not os.path.exists(BASE_DIR):
-    candidate_folders = [
-        ("news_scrapping", "2026"),
-        ("news_scrapping ", "2026"),
-        ("신문 스크랩", "2026"),
-        ("신문 스크랩 ", "2026")
-    ]
-    for folder_name, sub_name in candidate_folders:
-        temp_path = os.path.join(ROOT_DIR, folder_name, sub_name)
-        if os.path.exists(temp_path):
-            BASE_DIR = temp_path
-            break
+    candidate_kr = os.path.join(ROOT_DIR, "신문 스크랩")
+    if os.path.exists(candidate_kr):
+        BASE_DIR = candidate_kr
 
-# 좌측 이모티콘 PNG 이미지 매핑
+# 좌측 이모티콘 매핑
 CATEGORY_ICONS = {
     "경제": "경제.png",
     "에너지": "에너지.png",
@@ -62,7 +45,7 @@ CATEGORY_ICONS = {
     "금융": "금융.png"
 }
 
-# 우측 일러스트 PNG 이미지 매핑
+# 우측 일러스트 매핑
 CATEGORY_IMAGES = {
     "금융": "Finance.png",
     "반도체": "Semiconductor.png",
@@ -345,7 +328,7 @@ if "selected_category" not in st.session_state:
 if "selected_file" not in st.session_state:
     st.session_state.selected_file = None
 
-# 5. 워드 파일 파싱 함수
+# 5. 워드 파일 파싱 함수 (회전 각도 보정)
 NAMESPACES = {
     'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
     'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
@@ -387,12 +370,13 @@ def load_docx_content(file_path):
             
     return paragraphs, images
 
-# 6. 파일 수집 및 산업군 분류
+# 6. 연도/월별 하위 폴더까지 무제한 자동 수집 함수 (NFC 정규화 적용)
 def get_categorized_files(base_dir):
     data = {}
     if not base_dir or not os.path.exists(base_dir):
         return data
 
+    # os.walk로 2026/8월/0826/... 등 깊이와 상관없이 모든 하위 docx 탐색
     for root, _, filenames in os.walk(base_dir):
         for filename in filenames:
             if filename.endswith(".docx") and not filename.startswith("~$"):
@@ -440,7 +424,7 @@ else:
 
     if not categorized_data:
         target_display = BASE_DIR if BASE_DIR else "지정된 경로"
-        st.warning(f"'{target_display}' 경로에 워드 파일이 없습니다.")
+        st.warning(f"'{target_display}' 경로 및 하위 연도/월 폴더에 워드 파일이 없습니다.")
     else:
         categories = list(categorized_data.keys())
         cols = st.columns(3)
@@ -489,6 +473,7 @@ else:
             st.markdown("---")
             st.markdown(f"### 📰 **[{current_cat}]** 관련 기사 목록")
 
+            # 연도/월/일자가 섞여 있어도 파일명으로 깔끔하게 매핑
             file_options = {os.path.basename(f): f for f in files}
             selected_filename = st.selectbox(
                 "확인할 기사를 선택하세요:",
