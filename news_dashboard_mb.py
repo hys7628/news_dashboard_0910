@@ -432,7 +432,7 @@ else:
     with top_col1:
         st.subheader("📰 산업별 주요 뉴스 대시보드")
     with top_col2:
-        if st.button("🔄 처음으로 (물방울)", use_container_width=True):
+        if st.button("🔄 Home", use_container_width=True):
             st.session_state.is_expanded = False
             st.session_state.selected_category = None
             st.session_state.selected_file = None
