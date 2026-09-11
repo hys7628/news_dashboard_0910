@@ -56,13 +56,11 @@ CATEGORY_META = {
     # 기타 및 추가 산업군
     "기타": {"icon": "기타.png", "image": ""},
     "other": {"icon": "기타.png", "image": ""},
-    "it": {"icon": "IT.png", "image": ""},
     "테크": {"icon": "테크.png", "image": ""},
     "모빌리티": {"icon": "모빌리티.png", "image": ""},
     "바이오": {"icon": "바이오.png", "image": ""},
     "부동산": {"icon": "부동산.png", "image": ""},
-    "글로벌": {"icon": "글로벌.png", "image": ""},
-    "산업": {"icon": "산업.png", "image": ""},
+
     
 }
 
@@ -113,7 +111,7 @@ def get_icon_base64(file_name):
     return ""
 
 # 배경음악 제어 함수
-def play_background_audio(audio_file_path, volume=0.1):
+def play_background_audio(audio_file_path, volume=0.05):
     if os.path.exists(audio_file_path):
         with open(audio_file_path, "rb") as f:
             audio_bytes = f.read()
